@@ -1,7 +1,7 @@
 import sys
 import tkinter
 
-import homework3_cmpsc442 as homework3
+import homework3_tpp5217 as homework3
 
 class Tile(tkinter.Canvas):
 
