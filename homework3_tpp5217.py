@@ -9,6 +9,7 @@ student_name = "Tirth Patel"
 ############################################################
 
 # Include your imports here, if any are used.
+from _collections import deque
 import copy
 import random
 import heapq
@@ -41,6 +42,7 @@ class TilePuzzle(object):
         self.parent=None
         self.move=None
         self.g=None
+        self.level=None
         flag=False
         for i in range(self._r):
             for j in range(self._c):
@@ -129,29 +131,48 @@ class TilePuzzle(object):
 
     # Required
     def find_solutions_iddfs(self):
-        is_solved=False
-        limit=0
-        while not is_solved:
-            for moves in self.iddfs_helper(limit,[]):
-                yield moves
-                is_solved=True
-            limit+=1
-
-
-    def iddfs_helper(self,limit,moves):
         if self.is_solved():
-            yield moves
-        elif len(moves)<limit:
-            for move,new_puzzle in self.successors():
-                # if new_puzzle.is_solved():
-                #     yield moves+[move]
-                # else:
-                for solution in new_puzzle.iddfs_helper(limit,moves+[move]):
-                    yield solution
+            yield []
+        else:
+            is_solved=False
+            limit=0
+            while not is_solved:
+                for moves in self.iddfs_helper(limit):
+                    yield moves
+                    is_solved=True
+                limit+=1
+
+    def iddfs_helper(self,limit):
+        s = deque()
+        visited = {}
+        self.level = 0
+        s.append(self)
+        while len(s) != 0:
+            curr_puzzle = s.pop()
+            if curr_puzzle.level<limit:
+                board_tuple = curr_puzzle.tuple_board()
+                if board_tuple in visited:
+                    if visited[board_tuple]<curr_puzzle.level:
+                        continue
+                visited[board_tuple]=curr_puzzle.level
+                for move,next_puzzle in curr_puzzle.successors():
+                    if next_puzzle.is_solved():
+                        solution = []
+                        while curr_puzzle.parent != None:
+                            solution.append(curr_puzzle.move)
+                            curr_puzzle = curr_puzzle.parent
+                        solution.reverse()
+                        solution.append(move)
+                        yield solution
+                    else:
+                        next_puzzle.level=curr_puzzle.level+1
+                        next_puzzle.move=move
+                        next_puzzle.parent=curr_puzzle
+                        s.append(next_puzzle)
 
 
 
-    # Required
+            # Required
     def manhattan_distance(self,solved_board):
         d={}
         sum=0
@@ -171,30 +192,7 @@ class TilePuzzle(object):
         return tuple(l)
 
     def find_solution_a_star(self):
-        # visited=set()
-        # frontier={}
-        # solved_board=create_tile_puzzle(self._r,self._c).get_board()
-        # root_info=Info(None,None,0,0,0)
-        # frontier[self]=root_info
-        # while len(frontier)!=0:
-        #     curr_puzzle=min(frontier,key=lambda x:frontier[x].f)
-        #     curr_info=frontier.pop(curr_puzzle)
-        #     if curr_puzzle.is_solved():
-        #         solution=[]
-        #         while curr_info.parent!=None:
-        #             solution.append(curr_info.move)
-        #             curr_info=curr_info.parent
-        #         solution.reverse()
-        #         return solution
-        #     if curr_puzzle.tuple_board() not in visited:
-        #         visited.add(curr_puzzle.tuple_board())
-        #         for move,next_puzzle in curr_puzzle.successors():
-        #             h=next_puzzle.manhattan_distance(solved_board)
-        #             g=curr_info.g+1
-        #             f=g+h
-        #             next_info=Info(curr_info,move,f,g,h)
-        #             frontier[next_puzzle]=next_info
-        visited=set()
+        visited={}
         frontier=[]
         heapq.heapify(frontier)
         solved_board=create_tile_puzzle(self._r,self._c).get_board()
@@ -204,31 +202,36 @@ class TilePuzzle(object):
             m=heapq.heappop(frontier)
             curr_puzzle=m.item
             curr_puzzle_tuple=curr_puzzle.tuple_board()
+            if curr_puzzle_tuple in visited:
+                if visited[curr_puzzle_tuple] < curr_puzzle.g:
+                    continue
             if curr_puzzle.is_solved():
-                solution=[]
-                while curr_puzzle.parent!=None:
+                solution = []
+                while curr_puzzle.parent != None:
                     solution.append(curr_puzzle.move)
-                    curr_puzzle=curr_puzzle.parent
+                    curr_puzzle = curr_puzzle.parent
                 solution.reverse()
                 return solution
-            if curr_puzzle_tuple not in visited:
-                visited.add(curr_puzzle_tuple)
-                for move,next_puzzle in curr_puzzle.successors():
-                    h = next_puzzle.manhattan_distance(solved_board)
-                    g=curr_puzzle.g+1
-                    f=g+h
-                    next_puzzle.move=move
-                    next_puzzle.g=g
-                    next_puzzle.parent=curr_puzzle
-                    heapq.heappush(frontier,PrioritizedItem(f,next_puzzle))
+            visited[curr_puzzle_tuple]=curr_puzzle.g
+            for move,next_puzzle in curr_puzzle.successors():
+                next_puzzle_tuple=next_puzzle.tuple_board()
+                g = curr_puzzle.g + 1
+                if next_puzzle_tuple in visited:
+                    if visited[next_puzzle_tuple]<g:
+                        continue
+                h = next_puzzle.manhattan_distance(solved_board)
+                f=g+h
+                next_puzzle.move=move
+                next_puzzle.g=g
+                next_puzzle.parent=curr_puzzle
+                heapq.heappush(frontier,PrioritizedItem(f,next_puzzle))
 
-
+        return None
 
 
 ############################################################
 # Section 2: Grid Navigation
 ############################################################
-
 
 class Node:
     def __init__(self,value,parent,move,g):
@@ -263,7 +266,7 @@ def find_path_heuristic(pos,goal):
 def find_path(start, goal, scene):
     if scene[start[0]][start[1]] or scene[goal[0]][goal[1]]:
         return None
-    visited=set()
+    visited={}
     frontier=[]
     heapq.heapify(frontier)
     root_node=Node(start,None,None,0)
@@ -272,24 +275,30 @@ def find_path(start, goal, scene):
         m=heapq.heappop(frontier)
         curr_node=m.item
         curr_pos=curr_node.value
-        if curr_pos==goal:
-            solution=[]
-            while curr_node!=None:
+        if curr_pos in visited:
+            if visited[curr_pos]<curr_node.g:
+                continue
+        if curr_pos == goal:
+            solution = []
+            while curr_node != None:
                 solution.append(curr_node.value)
-                curr_node=curr_node.parent
+                curr_node = curr_node.parent
             solution.reverse()
             return solution
-        if curr_pos not in visited:
-            visited.add(curr_pos)
-            for move,next_pos in find_path_successors(curr_pos,scene):
-                h=find_path_heuristic(next_pos,goal)
-                g=curr_node.g+find_path_heuristic(next_pos,curr_pos)
-                f=g+h
-                next_node=Node(next_pos,curr_node,move,g)
-                heapq.heappush(frontier,PrioritizedItem(f,next_node))
+        visited[curr_pos]=curr_node.g
+        for move,next_pos in find_path_successors(curr_pos,scene):
+            g = curr_node.g + find_path_heuristic(next_pos, curr_pos)
+            if next_pos in visited:
+                if visited[next_pos]<g:
+                    continue
+            h=find_path_heuristic(next_pos,goal)
+            f=g+h
+            next_node=Node(next_pos,curr_node,move,g)
+            heapq.heappush(frontier,PrioritizedItem(f,next_node))
 
     return None
 
+    
 
 ############################################################
 # Section 3: Linear Disk Movement, Revisited
@@ -342,13 +351,16 @@ def solve_distinct_disks(length, n):
     board = tuple([i for i in range(n)])
     frontier=[]
     heapq.heapify(frontier)
-    s = set()
+    visited={}
     root_node=Node(board,None,None,0)
     heapq.heappush(frontier,PrioritizedItem(0,root_node))
     while len(frontier)!=0:
         m=heapq.heappop(frontier)
         curr_node=m.item
         curr_board=curr_node.value
+        if curr_board in visited:
+            if visited[curr_board]<curr_node.g:
+                continue
         if is_solved_distinct(curr_board,length):
             solution=[]
             while curr_node.parent!=None:
@@ -356,14 +368,16 @@ def solve_distinct_disks(length, n):
                 curr_node=curr_node.parent
             solution.reverse()
             return solution
-        if curr_board not in s:
-            s.add(curr_board)
-            for move, next_board in successor_dictinct(curr_board, length):
-                h=heuristic_linear_disk(next_board,length)
-                g=curr_node.g+1
-                f=g+h
-                next_node=Node(next_board,curr_node,move,g)
-                heapq.heappush(frontier,PrioritizedItem(f,next_node))
+        visited[curr_board]=curr_node.g
+        for move, next_board in successor_dictinct(curr_board, length):
+            g = curr_node.g + 1
+            if next_board in visited:
+                if visited[next_board]<g:
+                    continue
+            h=heuristic_linear_disk(next_board,length)
+            f=g+h
+            next_node=Node(next_board,curr_node,move,g)
+            heapq.heappush(frontier,PrioritizedItem(f,next_node))
 
     return None
 
@@ -494,19 +508,13 @@ class DominoesGame(object):
 ############################################################
 
 feedback_question_1 = """
-Type your response here.
-Your response may span multiple lines.
-Do not include these instructions in your response.
+This assignment took me 15 hours to complete.
 """
 
 feedback_question_2 = """
-Type your response here.
-Your response may span multiple lines.
-Do not include these instructions in your response.
+implementing a priority queue based approach for a* algorithm was challenging
 """
 
 feedback_question_3 = """
-Type your response here.
-Your response may span multiple lines.
-Do not include these instructions in your response.
+I liked implementing a* algorithm. I would have liked more test cases for grid navigation.
 """
