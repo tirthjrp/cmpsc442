@@ -39,10 +39,6 @@ class TilePuzzle(object):
         self._r=len(board)
         self._c=len(board[0])
         self._empty=[]
-        self.parent=None
-        self.move=None
-        self.g=None
-        self.level=None
         flag=False
         for i in range(self._r):
             for j in range(self._c):
@@ -156,6 +152,8 @@ class TilePuzzle(object):
                 d[self._board[i][j]]=[i,j]
         for i in range(self._r):
             for j in range(self._c):
+                if solved_board[i][j]==0:
+                    continue
                 pos=d[solved_board[i][j]]
                 sum+=abs(i-pos[0])+abs(j-pos[1])
         return sum
@@ -167,41 +165,6 @@ class TilePuzzle(object):
         return tuple(l)
 
     def find_solution_a_star(self):
-        # visited={}
-        # frontier=[]
-        # heapq.heapify(frontier)
-        # solved_board=create_tile_puzzle(self._r,self._c).get_board()
-        # self.g=0
-        # heapq.heappush(frontier,PrioritizedItem(0,self))
-        # while len(frontier)!=0:
-        #     m=heapq.heappop(frontier)
-        #     curr_puzzle=m.item
-        #     curr_puzzle_tuple=curr_puzzle.tuple_board()
-        #     if curr_puzzle_tuple in visited:
-        #         if visited[curr_puzzle_tuple] <= curr_puzzle.g:
-        #             continue
-        #     if curr_puzzle.is_solved():
-        #         solution = []
-        #         while curr_puzzle.parent != None:
-        #             solution.append(curr_puzzle.move)
-        #             curr_puzzle = curr_puzzle.parent
-        #         solution.reverse()
-        #         return solution
-        #     visited[curr_puzzle_tuple]=curr_puzzle.g
-        #     for move,next_puzzle in curr_puzzle.successors():
-        #         next_puzzle_tuple=next_puzzle.tuple_board()
-        #         g = curr_puzzle.g + 1
-        #         if next_puzzle_tuple in visited:
-        #             if visited[next_puzzle_tuple]<=g:
-        #                 continue
-        #         h = next_puzzle.manhattan_distance(solved_board)
-        #         f=g+h
-        #         next_puzzle.move=move
-        #         next_puzzle.g=g
-        #         next_puzzle.parent=curr_puzzle
-        #         heapq.heappush(frontier,PrioritizedItem(f,next_puzzle))
-        #
-        # return None
 
         solved_board = create_tile_puzzle(self._r, self._c).get_board()
         frontier=[]
@@ -243,13 +206,6 @@ class TilePuzzle(object):
 # Section 2: Grid Navigation
 ############################################################
 
-class Node:
-    def __init__(self,value,parent,move,g):
-        self.value=value
-        self.parent=parent
-        self.move=move
-        self.g=g
-
 def find_path_successors(pos,scene):
     r=len(scene)
     c=len(scene[0])
@@ -274,39 +230,6 @@ def find_path_heuristic(pos,goal):
     return math.sqrt(math.pow(pos[0]-goal[0],2)+math.pow(pos[1]-goal[1],2))
 
 def find_path(start, goal, scene):
-    # if scene[start[0]][start[1]] or scene[goal[0]][goal[1]]:
-    #     return None
-    # visited={}
-    # frontier=[]
-    # heapq.heapify(frontier)
-    # root_node=Node(start,None,None,0)
-    # heapq.heappush(frontier,PrioritizedItem(0,root_node))
-    # while len(frontier)!=0:
-    #     m=heapq.heappop(frontier)
-    #     curr_node=m.item
-    #     curr_pos=curr_node.value
-    #     if curr_pos in visited:
-    #         if visited[curr_pos]<=curr_node.g:
-    #             continue
-    #     if curr_pos == goal:
-    #         solution = []
-    #         while curr_node != None:
-    #             solution.append(curr_node.value)
-    #             curr_node = curr_node.parent
-    #         solution.reverse()
-    #         return solution
-    #     visited[curr_pos]=curr_node.g
-    #     for move,next_pos in find_path_successors(curr_pos,scene):
-    #         g = curr_node.g + find_path_heuristic(next_pos, curr_pos)
-    #         if next_pos in visited:
-    #             if visited[next_pos]<=g:
-    #                 continue
-    #         h=find_path_heuristic(next_pos,goal)
-    #         f=g+h
-    #         next_node=Node(next_pos,curr_node,move,g)
-    #         heapq.heappush(frontier,PrioritizedItem(f,next_node))
-    #
-    # return None
 
     if scene[start[0]][start[1]] or scene[goal[0]][goal[1]]:
         return None
@@ -386,43 +309,16 @@ def is_solved_distinct(board,length):
 def heuristic_linear_disk(board,length):
     sum=0
     for i in range(len(board)):
-        sum+=abs(board[i]-(length-i-1))
+        temp=abs(board[i]-(length-i-1))
+        if temp%2==0:
+            temp=temp/2
+        else:
+            temp=(temp+1)/2
+        sum+=temp
     return sum
 
 
 def solve_distinct_disks(length, n):
-    # board = tuple([i for i in range(n)])
-    # frontier=[]
-    # heapq.heapify(frontier)
-    # visited={}
-    # root_node=Node(board,None,None,0)
-    # heapq.heappush(frontier,PrioritizedItem(0,root_node))
-    # while len(frontier)!=0:
-    #     m=heapq.heappop(frontier)
-    #     curr_node=m.item
-    #     curr_board=curr_node.value
-    #     if curr_board in visited:
-    #         if visited[curr_board]<=curr_node.g:
-    #             continue
-    #     if is_solved_distinct(curr_board,length):
-    #         solution=[]
-    #         while curr_node.parent!=None:
-    #             solution.append(curr_node.move)
-    #             curr_node=curr_node.parent
-    #         solution.reverse()
-    #         return solution
-    #     visited[curr_board]=curr_node.g
-    #     for move, next_board in successor_dictinct(curr_board, length):
-    #         g = curr_node.g + 1
-    #         if next_board in visited:
-    #             if visited[next_board]<=g:
-    #                 continue
-    #         h=heuristic_linear_disk(next_board,length)
-    #         f=g+h
-    #         next_node=Node(next_board,curr_node,move,g)
-    #         heapq.heappush(frontier,PrioritizedItem(f,next_node))
-    #
-    # return None
 
     board = tuple([i for i in range(n)])
     frontier=[]
