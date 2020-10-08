@@ -138,9 +138,9 @@ class TilePuzzle(object):
     def iddfs_helper(self, limit, moves):
         if self.is_solved():
             yield moves
-        elif len(moves) < limit:
+        elif limit>0:
             for move, new_puzzle in self.successors():
-                for solution in new_puzzle.iddfs_helper(limit, moves + [move]):
+                for solution in new_puzzle.iddfs_helper(limit-1, moves + [move]):
                     yield solution
 
             # Required

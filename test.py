@@ -9,10 +9,6 @@ import time
 #         l[i[0]]=-1
 #     print(l)
 #
-#
-#
-#
-#
 # length=18
 # n=4
 # start=time.time()
@@ -26,23 +22,23 @@ import time
 # print(y)
 # end=time.time()
 # print(end-start)
-#
-#
+
+
 #
 # solve(length,n,x)
 # print(len(x))
 # solve(length,n,y)
 # print(len(y))
-
+#
 # b = [[False] * 3 for i in range(3)]
 # g = homework3_tpp5217.DominoesGame(b)
 # g.perform_move(0, 1, True)
 # start=time.time()
-# print(g.get_best_move(False,2))
+# print(g.get_best_move(False,1))
 # end=time.time()
 # print(end-start)
 
-# b =[[1,2,3], [4,0,5], [6,7,8]]
+# b =[[4,1,2], [0,5,3], [7,8,6]]
 # p = homework3_tpp5217.TilePuzzle(b)
 # start=time.time()
 # print(p.find_solution_a_star())
@@ -50,8 +46,8 @@ import time
 # print(end-start)
 
 #
-# scene = [[False for j in range(200)]for i in range(100)]
-# start=time.time()
-# print(homework3_tpp5217.find_path((0, 0), (0,0), scene))
-# end=time.time()
-# print(end-start)
+scene = [[False for j in range(100)]for i in range(100)]
+start=time.time()
+print(homework3_tpp5217.find_path((0, 0), (0,99), scene))
+end=time.time()
+print(end-start)
