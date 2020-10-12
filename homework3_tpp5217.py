@@ -9,26 +9,23 @@ student_name = "Tirth Patel"
 ############################################################
 
 # Include your imports here, if any are used.
-from _collections import deque
 import copy
 import random
-import heapq
 import math
-from dataclasses import dataclass, field
-from typing import Any
+import queue
+
+
+
 
 
 
 ############################################################
 # Section 1: Tile Puzzle
 ############################################################
-@dataclass(order=True)
-class PrioritizedItem:
-    priority: float
-    item: Any=field(compare=False)
+
 
 def create_tile_puzzle(rows, cols):
-    l=[[0 if j==(rows*cols) else j for j in range(((i-1)*cols)+1,((i-1)*cols)+1+cols) ]for i in range(1,rows+1)]
+    l=[[0 if j==(rows*cols) else j for j in range(((i-1)*cols)+1,((i-1)*cols)+1+cols)]for i in range(1,rows+1)]
     return TilePuzzle(l)
 
 class TilePuzzle(object):
@@ -167,17 +164,17 @@ class TilePuzzle(object):
     def find_solution_a_star(self):
 
         solved_board = create_tile_puzzle(self._r, self._c).get_board()
-        frontier=[]
-        heapq.heapify(frontier)
+        frontier=queue.PriorityQueue(maxsize=0)
         came_from={}
         cost_so_far={}
-        heapq.heappush(frontier,PrioritizedItem(0,self))
+        count=0
+        frontier.put((0,count,self))
         start_tuple=self.tuple_board()
         came_from[start_tuple]=None
         cost_so_far[start_tuple]=0
-        while len(frontier)!=0:
-            m=heapq.heappop(frontier)
-            curr_puzzle=m.item
+        while not frontier.empty():
+            m=frontier.get()
+            curr_puzzle=m[2]
             curr_puzzle_tuple=curr_puzzle.tuple_board()
             if curr_puzzle.is_solved():
                 solution=[]
@@ -193,12 +190,11 @@ class TilePuzzle(object):
                     cost_so_far[next_puzzle_tuple]=new_cost
                     h = next_puzzle.manhattan_distance(solved_board)
                     f=new_cost+h
-                    heapq.heappush(frontier,PrioritizedItem(f,next_puzzle))
+                    count+=1
+                    frontier.put((f,count,next_puzzle))
                     came_from[next_puzzle_tuple]=[curr_puzzle_tuple,move]
 
         return None
-
-
 
 
 
@@ -233,17 +229,17 @@ def find_path(start, goal, scene):
 
     if scene[start[0]][start[1]] or scene[goal[0]][goal[1]]:
         return None
-    frontier=[]
+    frontier=queue.PriorityQueue(maxsize=0)
     came_from={}
     cost_so_far={}
-    heapq.heapify(frontier)
-    heapq.heappush(frontier,PrioritizedItem(0,start))
+    count=0
+    frontier.put((0,count,start))
     came_from[start]=None
     cost_so_far[start]=0
 
-    while len(frontier)!=0:
-        m=heapq.heappop(frontier)
-        curr_pos=m.item
+    while not frontier.empty():
+        m=frontier.get()
+        curr_pos=m[2]
         if curr_pos==goal:
             solution=[]
             solution.append(curr_pos)
@@ -258,7 +254,8 @@ def find_path(start, goal, scene):
                 cost_so_far[next_pos]=new_cost
                 h=find_path_heuristic(next_pos,goal)
                 f=new_cost+h
-                heapq.heappush(frontier,PrioritizedItem(f,next_pos))
+                count+=1
+                frontier.put((f,count,next_pos))
                 came_from[next_pos]=curr_pos
 
     return None
@@ -269,6 +266,7 @@ def find_path(start, goal, scene):
 ############################################################
 # Section 3: Linear Disk Movement, Revisited
 ############################################################
+
 def successor_dictinct(board,length):
     l=[-1 for i in range(length)]
     for i in board:
@@ -321,16 +319,16 @@ def heuristic_linear_disk(board,length):
 def solve_distinct_disks(length, n):
 
     board = tuple([i for i in range(n)])
-    frontier=[]
-    heapq.heapify(frontier)
+    frontier=queue.PriorityQueue(maxsize=0)
     came_from={}
     cost_so_far={}
-    heapq.heappush(frontier,PrioritizedItem(0,board))
+    count=0
+    frontier.put((0,count,board))
     came_from[board]=None
     cost_so_far[board]=0
-    while len(frontier)!=0:
-        m=heapq.heappop(frontier)
-        curr_board=m.item
+    while not frontier.empty():
+        m=frontier.get()
+        curr_board=m[2]
         if is_solved_distinct(curr_board,length):
             solution=[]
             while curr_board!=board:
@@ -344,7 +342,8 @@ def solve_distinct_disks(length, n):
                 cost_so_far[next_board]=new_cost
                 h = heuristic_linear_disk(next_board, length)
                 f=new_cost+h
-                heapq.heappush(frontier, PrioritizedItem(f, next_board))
+                count+=1
+                frontier.put((f,count,next_board))
                 came_from[next_board]=[curr_board,move]
 
     return None
