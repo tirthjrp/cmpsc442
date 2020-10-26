@@ -10,6 +10,8 @@ student_name = "Tirth Patel"
 
 # Include your imports here, if any are used.
 from itertools import product
+from itertools import combinations
+import copy
 
 
 
@@ -30,7 +32,10 @@ class Atom(Expr):
         self.hashable = name
 
     def __eq__(self, other):
-        return True if self.name==other.name else False
+        if type(self) is type(other):
+            return True if self.name==other.name else False
+        else:
+            return False
     def __repr__(self):
         return "Atom"+"(" + str(self.name) + ")"
     def atom_names(self):
@@ -50,7 +55,10 @@ class Not(Expr):
         self.arg = arg
         self.hashable = arg
     def __eq__(self, other):
-        return True if self.arg==other.arg else False
+        if type(self) is type(other):
+            return True if self.arg==other.arg else False
+        else:
+            return False
     def __repr__(self):
         return "Not"+"("+repr(self.arg)+")"
     def atom_names(self):
@@ -82,7 +90,10 @@ class And(Expr):
         self.conjuncts = frozenset(conjuncts)
         self.hashable = self.conjuncts
     def __eq__(self, other):
-        return True if self.conjuncts==other.conjuncts else False
+        if type(self) is type(other):
+            return True if self.conjuncts==other.conjuncts else False
+        else:
+            return False
     def __repr__(self):
         temp="And("
         for i in self.conjuncts:
@@ -121,7 +132,10 @@ class Or(Expr):
         self.disjuncts = frozenset(disjuncts)
         self.hashable = self.disjuncts
     def __eq__(self, other):
-        return True if self.disjuncts==other.disjuncts else False
+        if type(self) is type(other):
+            return True if self.disjuncts==other.disjuncts else False
+        else:
+            return False
     def __repr__(self):
         temp = "Or("
         for i in self.disjuncts:
@@ -198,7 +212,10 @@ class Implies(Expr):
         self.right = right
         self.hashable = (left, right)
     def __eq__(self, other):
-        return True if (self.left==other.left and self.right==other.right) else False
+        if type(self) is type(other):
+            return True if (self.left==other.left and self.right==other.right) else False
+        else:
+            return False
     def __repr__(self):
         return "Implies("+repr(self.left)+","+repr(self.right)+")"
     def atom_names(self):
@@ -225,7 +242,10 @@ class Iff(Expr):
         self.right = right
         self.hashable = (left, right)
     def __eq__(self, other):
-        return True if (self.left==other.left and self.right==other.right) else False
+        if type(self) is type(other):
+            return True if (self.left==other.left and self.right==other.right) else False
+        else:
+            return False
     def __repr__(self):
         return "Iff("+repr(self.left)+","+repr(self.right)+")"
     def atom_names(self):
@@ -278,89 +298,58 @@ class KnowledgeBase(object):
                     clauses.add(j)
             else:
                 clauses.add(i)
-        
-        # while True:
-        #     clauses_list = list(clauses)
-        #     for i in range(len(clauses_list)-1):
-        #         for j in range(i+1,len(clauses_list)):
-        #
-        #             first=clauses_list[i]
-        #             second=clauses_list[j]
-        #
-        #             first_set=set()
-        #             second_set=set()
-        #             if type(first) is Or:
-        #                 for x in first.disjuncts:
-        #                     first_set.add(x)
-        #             else:
-        #                 first_set.add(first)
-        #
-        #             if type(second) is Or:
-        #                 for x in second.disjuncts:
-        #                     second_set.add(x)
-        #             else:
-        #                 second_set.add(second)
-        #
-        #
-        #             full_final=set()
-        #             main=False
-        #             print(first_set)
-        #             print(second_set)
-        #             for x in first_set:
-        #                 final = first_set.union(second_set)
-        #                 flag=False
-        #                 for y in second_set:
-        #                     if type(x) is Atom and type(y) is Not:
-        #                         if Not(x)==y:
-        #                             final.remove(x)
-        #                             final.remove(y)
-        #                             flag=True
-        #                             break
-        #                     elif type(x) is Not and type(y) is Atom:
-        #                         if x==Not(y):
-        #                             final.remove(x)
-        #                             final.remove(y)
-        #                             flag = True
-        #                             break
-        #                 if flag:
-        #                     main=True
-        #                     if len(final)==0:
-        #                         continue
-        #                     if len(final)==1:
-        #                         full_final=full_final.union(final)
-        #                     else:
-        #                         final_list=list(final)
-        #                         for i range:
-        #
-        #                         full_final.add(Or(*final))
-        #             print(full_final)
-        #             if len(full_final)==0:
-        #                 if not main:
-        #                     continue
-        #                 else:
-        #                     print("bye")
-        #                     return True
-        #             else:
-        #                 new=new.union(full_final)
-        #             print("hey",new)
-        #     final_flag=False
-        #     for i in new:
-        #         flag = False
-        #         for j in clauses:
-        #             if type(i) is type(j):
-        #                 if i==j:
-        #                     flag=True
-        #                     break
-        #         if not flag:
-        #             final_flag=True
-        #             break
-        #
-        #     if not final_flag:
-        #         return False
-        #
-        #     clauses=clauses.union(new)
 
+        while True:
+            for pair in combinations(clauses,2):
+                first=pair[0]
+                second=pair[1]
+                first_set=set()
+                second_set=set()
+                if type(first) is Or:
+                    for x in first.disjuncts:
+                        first_set.add(x)
+                else:
+                    first_set.add(first)
 
+                if type(second) is Or:
+                    for x in second.disjuncts:
+                        second_set.add(x)
+                else:
+                    second_set.add(second)
+                resolvent=set()
+                flag=False
+                for i in first_set:
+                    combined = first_set.union(second_set)
+                    for j in second_set:
+                        if (Not(j).to_cnf())==i:
+                            combined.remove(i)
+                            combined.remove(j)
+                            flag=True
+                            if len(combined)==1:
+                                resolvent=resolvent.union(combined)
+                            elif len(combined)>1:
+                                resolvent.add(Or(*combined))
+                            break
+
+                if not flag:
+                    continue
+                if len(resolvent)==0:
+                    return True
+                else:
+                    resolvent_copy = copy.deepcopy(resolvent)
+                    for i in resolvent:
+                        if type(i) is Or:
+                            for a, b in combinations(i.disjuncts, 2):
+                                if Not(a).to_cnf() == b:
+                                    resolvent_copy.remove(i)
+                                    break
+
+                    resolvent=resolvent_copy
+                    new=new.union(resolvent)
+
+            if new.issubset(clauses):
+                return False
+            clauses=clauses.union(new)
 
 
 ############################################################
