@@ -9,8 +9,7 @@ student_name = "Tirth Patel"
 ############################################################
 
 # Include your imports here, if any are used.
-from itertools import product
-from itertools import combinations
+from itertools import product,combinations
 import copy
 
 
@@ -243,7 +242,7 @@ class Iff(Expr):
         self.hashable = (left, right)
     def __eq__(self, other):
         if type(self) is type(other):
-            return True if (self.left==other.left and self.right==other.right) else False
+            return True if ((self.left==other.left and self.right==other.right) or(self.left==other.right and self.right==other.left)) else False
         else:
             return False
     def __repr__(self):
@@ -370,7 +369,6 @@ mythical_query = Atom("mythical")
 magical_query = Atom("magical")
 horned_query = Atom("horned")
 
-
 # Record your answers as True or False; if you wish to use the above queries,
 # they should not be run when this file is loaded
 is_mythical = False
@@ -383,7 +381,7 @@ is_horned = True
 party_constraints = And(Implies(Or(Atom("m"),Atom("a")),Atom("j")),Implies(Not(Atom("m")),Atom("a")),Implies(Atom("a"),Not(Atom("j"))))
 
 # Compute a list of the valid attendance scenarios using a call to
-# satisfying_assignments(expr)
+
 valid_scenarios = [{'j': True, 'a': False, 'm': True}]
 
 # Write your answer to the question in the assignment
