@@ -1,17 +1,7 @@
-from homework4_tpp5217 import Atom, And, Or, Implies, Not, Iff,satisfying_assignments,KnowledgeBase
-#
-# a, b, c = map(Atom, "abc")
-# kb = KnowledgeBase()
-# kb.tell(Iff(a, Or(b, c)))
-# kb.tell(Not(a))
-# print([kb.ask(x) for x in (a, b)])
-#
-# a, b, c = map(Atom, "abc")
-# kb = KnowledgeBase()
-# kb.tell(a)
-# kb.tell(Implies(a, b))
-# print( [kb.ask(x) for x in (a, b, c)])
-# d={"a":True,"b":False}
+import homework5_tpp5217
+
+sf = homework5_tpp5217.SpamFilter("homework5_data/train/spam","homework5_data/train/ham", 1e-5)
+print(sf.most_indicative_ham(5))
 
 
 

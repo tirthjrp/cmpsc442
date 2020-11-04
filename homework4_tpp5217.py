@@ -410,7 +410,11 @@ Do not include these instructions in your response.
 
 # Populate the knowledge base using statements of the form kb4.tell(...)
 kb4 = KnowledgeBase()
-
+kb4.tell(Implies(Atom("ia"),And(Atom("kb"),Not(Atom("kc")))))
+kb4.tell(Implies(Atom("ib"),Not(Atom("kb"))))
+kb4.tell(Implies(Atom("ic"),And(Atom("ka"),Atom("kb"))))
+kb4.tell(Implies(Atom("ic"),Or(Not(Atom("ia")),Not(Atom("ib")))))
+kb4.tell(Implies(Not(And(Atom("ia"),Atom("ib"))),Atom("ic")))
 # Uncomment the line corresponding to the guilty suspect
 # guilty_suspect = "Adams"
 guilty_suspect = "Brown"
@@ -418,7 +422,20 @@ guilty_suspect = "Brown"
 
 # Describe the queries you made to ascertain your findings
 puzzle_4_question = """
-Adam says that brown knows the victim and brown says that he does not know the victim. So, Adam or Brown are guilty.This means clark is right. Clark saw adam and brown in downtown with victim and also adam says that the victim is friend of brown. So brown is guilty.
+Asked if Adam was guilty.
+kb4.ask(Not(Atom("ia")))
+It returned False.
+Asked if clark was guilty.
+kb4.ask(Not(Atom("ic")))
+It returned False.
+Asked if brown was guilty.
+kb4.ask(Not(Atom("ib")))
+It returned True.
+
+So brown is guilty.
+Reasoning:
+Adam says that brown knows the victim and brown says that he does not know the victim. So, Adam or Brown is guilty.If either adam or brown is guilty then clark must be innocent and telling the truth.
+Clark says that brown knows the victim but brown says he does not. Since clark is innocent and telling the truth, brown is lying. Since we know that guilty guy is lying, brown must be guilty.
 """
 
 ############################################################
