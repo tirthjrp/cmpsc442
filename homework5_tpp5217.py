@@ -34,10 +34,7 @@ def log_probs(email_paths, smoothing):
                 d[token]+=1
             else:
                 d[token]=1
-    total=0
-    for token in d:
-        total+=d[token]
-
+    total=sum(d.values())
     for token in d:
         d[token]=log((d[token]+smoothing)/(total+smoothing*(len(d)+1)))
 
@@ -53,11 +50,11 @@ class SpamFilter(object):
         spam_paths=os.listdir(spam_dir)
         ham_paths=os.listdir(ham_dir)
         for i in range(len(spam_paths)):
-            spam_paths[i]=spam_dir+"/"+spam_paths[i]
+            spam_paths[i]=os.path.join(spam_dir,spam_paths[i])
         for i in range(len(ham_paths)):
-            ham_paths[i]=ham_dir+"/"+ham_paths[i]
+            ham_paths[i]=os.path.join(ham_dir,ham_paths[i])
         self.ham_prob=log(len(ham_paths)/(len(ham_paths)+len(spam_paths)))
-        self.spam_prob=log(1-self.ham_prob)
+        self.spam_prob=log(len(spam_paths)/(len(spam_paths)+len(ham_paths)))
         self.ham_tokens_prob=log_probs(ham_paths,smoothing)
         self.spam_tokens_prob=log_probs(spam_paths,smoothing)
 
@@ -85,9 +82,10 @@ class SpamFilter(object):
         ind_values=[]
         for i in self.spam_tokens_prob:
             if i in self.ham_tokens_prob:
-                value=self.spam_tokens_prob[i]-log(exp(self.ham_prob)*exp(self.ham_tokens_prob[i])+exp(self.spam_prob)*exp(self.spam_tokens_prob[i]))
-                ind_values.append([i,value])
-        ind_values.sort(key=lambda x: x[1], reverse=False)
+                temp=log(exp(1)**(self.ham_tokens_prob[i]+self.ham_prob)+exp(1)**(self.spam_tokens_prob[i]+self.spam_prob))
+                value=self.spam_tokens_prob[i] -temp;
+                ind_values.append((i,value))
+        ind_values.sort(key=lambda x: x[1], reverse=True)
         return list(map(lambda x:x[0],ind_values))[:n]
 
 
@@ -95,11 +93,10 @@ class SpamFilter(object):
         ind_values = []
         for i in self.spam_tokens_prob:
             if i in self.ham_tokens_prob:
-                value = self.ham_tokens_prob[i] - log(
-                    exp(self.ham_prob) * exp(self.ham_tokens_prob[i]) + exp(self.spam_prob) * exp(
-                        self.spam_tokens_prob[i]))
-                ind_values.append([i, value])
-        ind_values.sort(key=lambda x: x[1], reverse=False)
+                temp = log(exp(1) ** (self.ham_tokens_prob[i] + self.ham_prob) + exp(1) ** (self.spam_tokens_prob[i] + self.spam_prob))
+                value = self.ham_tokens_prob[i] - temp
+                ind_values.append((i, value))
+        ind_values.sort(key=lambda x: x[1], reverse=True)
         return list(map(lambda x: x[0], ind_values))[:n]
 
 ############################################################
