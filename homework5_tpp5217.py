@@ -82,8 +82,8 @@ class SpamFilter(object):
         ind_values=[]
         for i in self.spam_tokens_prob:
             if i in self.ham_tokens_prob:
-                temp=log(exp(1)**(self.ham_tokens_prob[i]+self.ham_prob)+exp(1)**(self.spam_tokens_prob[i]+self.spam_prob))
-                value=self.spam_tokens_prob[i] -temp;
+                temp=log((exp(1)**(self.ham_tokens_prob[i]+ self.ham_prob))+(exp(1)**(self.spam_tokens_prob[i]+self.spam_prob)))
+                value=self.spam_tokens_prob[i] -temp
                 ind_values.append((i,value))
         ind_values.sort(key=lambda x: x[1], reverse=True)
         return list(map(lambda x:x[0],ind_values))[:n]
@@ -93,7 +93,7 @@ class SpamFilter(object):
         ind_values = []
         for i in self.spam_tokens_prob:
             if i in self.ham_tokens_prob:
-                temp = log(exp(1) ** (self.ham_tokens_prob[i] + self.ham_prob) + exp(1) ** (self.spam_tokens_prob[i] + self.spam_prob))
+                temp = log((exp(1) ** (self.ham_tokens_prob[i]+self.ham_prob)) + (exp(1) ** (self.spam_tokens_prob[i]+self.spam_prob)))
                 value = self.ham_tokens_prob[i] - temp
                 ind_values.append((i, value))
         ind_values.sort(key=lambda x: x[1], reverse=True)
@@ -104,7 +104,7 @@ class SpamFilter(object):
 ############################################################
 
 feedback_question_1 = """
-It took me 4 hours to complete.
+It took me 6 hours to complete.
 """
 
 feedback_question_2 = """
